@@ -1,66 +1,58 @@
 # bytecode-crosschain-soundness
 
-# Overview
-This repository contains a tiny CLI tool that compares deployed bytecode hashes for the same contract addresses across two different RPC endpoints or networks. It helps ensure cross-chain or cross-RPC consistency and catches drift after upgrades, re-deploys, or indexing bugs. This is useful for monitoring L1 contracts that coordinate with privacy/zk ecosystems like Aztec or Zama where interface and code soundness is critical.
+## Overview
+A Python-based CLI tool that verifies **cross-chain soundness** by comparing smart contract bytecode hashes between two EVM-compatible chains.  
+This ensures the contract deployed on multiple chains (e.g., **Ethereum** and **Arbitrum**, or **Aztec L1 bridge** and **Zama rollup verifier**) is identical and sound.
 
-# What it does
-1) Connects to two RPC endpoints (A and B).
-2) Fetches runtime bytecode for each target address at user-specified blocks.
-3) Computes keccak hashes of bytecode on both sides.
-4) Reports per-address MATCH/MISMATCH and provides a JSON summary for CI.
+## Features
+- Compare bytecode between two chains using RPCs  
+- Works with any EVM-compatible networks (Ethereum, Arbitrum, Base, Polygon, etc.)  
+- Supports specific block numbers or finalized tags  
+- JSON output for CI/CD or automated audits  
+- Clear emoji-based output for quick visual results  
 
-# Installation
-1) Requires Python 3.9+.
-2) Install dependencies:
+## Installation
+1. Install Python 3.9+  
+2. Install dependencies:
    pip install web3
-3) Provide two RPC endpoints via flags or environment variables:
-   RPC_A_URL and RPC_B_URL
+3. Set your RPC URLs (optional):
+   export SRC_RPC_URL=https://mainnet.infura.io/v3/YOUR_KEY  
+   export DST_RPC_URL=https://arb1.arbitrum.io/rpc
 
-# Usage
-Compare a single address:
-   python app.py --address 0xYourContract
+## Usage
+Compare contract bytecode between chains:
+   python app.py --address 0x00000000219ab540356cBB839Cbe05303d7705Fa
 
-Compare multiple addresses:
-   python app.py --address 0xA --address 0xB --address 0xC
+Specify blocks for historical comparison:
+   python app.py --address 0xYourContract --src-block 21000000 --dst-block 21000000
 
-Use a manifest with a list of addresses (JSON array):
-   python app.py --manifest ./addresses.json
+Custom RPCs:
+   python app.py --src-rpc https://mainnet.infura.io/v3/YOUR_KEY --dst-rpc https://base-mainnet.g.alchemy.com/v2/YOUR_KEY --address 0xYourContract
 
-Set explicit RPCs and blocks:
-   python app.py --rpc-a https://mainnet.infura.io/v3/YOUR_KEY --rpc-b https://rpc.ankr.com/eth --block-a finalized --block-b 21000000
+JSON output for automation:
+   python app.py --address 0xYourContract --json
 
-Emit JSON for CI:
-   python app.py --manifest addresses.json --json --quiet
+## Example Output
+🔧 bytecode-crosschain-soundness  
+🌐 Source RPC: https://mainnet.infura.io/v3/YOUR_KEY  
+🌐 Destination RPC: https://arb1.arbitrum.io/rpc  
+🏷️ Address: 0x00000000219ab540356cBB839Cbe05303d7705Fa  
+⛓️ Source Block: latest  
+⛓️ Destination Block: latest  
+🔹 Source bytecode hash: 0x4d0e2df5b23f...  
+🔸 Destination bytecode hash: 0x4d0e2df5b23f...  
+🧩 Cross-chain bytecode comparison result: ✅ MATCH  
+⏱️ Completed in 0.74s
 
-# Arguments
---rpc-a        RPC URL for chain A (default from RPC_A_URL)
---rpc-b        RPC URL for chain B (default from RPC_B_URL)
---block-a      Block tag or number for chain A (default: finalized)
---block-b      Block tag or number for chain B (default: finalized)
---address      Address to compare; can be repeated multiple times
---manifest     Path to a JSON file containing an array of addresses
---timeout      HTTP timeout in seconds (default: 30)
---concurrency  Number of parallel comparisons (default: 8)
---json         Print machine-readable JSON summary
---quiet, -q    Suppress normal output; print only mismatches and errors
+## Notes
+- If either chain returns no code, the tool will exit with code `2` and print an error.  
+- Works across all EVM-compatible chains; ideal for cross-chain bridge verifications.  
+- You can use this in CI pipelines to ensure deployment consistency between testnet and mainnet.  
+- Always pin to specific blocks for deterministic results (especially during rollup reorgs).  
+- This tool performs only read operations — it is safe to run against production RPCs.  
+- For Aztec/Zama systems, verifying bytecode soundness across chains ensures integrity of rollup verifiers and bridge contracts.  
+- Recommended integration: run nightly to detect any unexpected redeployments or upgrades.  
+- Exit codes:  
+  `0` → soundness verified (match)  
+  `2` → mismatch or missing contract code.
 
-# Manifest format
-The manifest file is a JSON array of addresses, for example:
-[
-  "0x00000000219ab540356cBB839Cbe05303d7705Fa",
-  "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
-]
-
-# Expected output
-You will see a header with RPCs, block tags, and then one line per address:
-🔍 0x... -> A:0x...  B:0x... | ✅ MATCH
-or
-🔍 0x... -> A:0x...  B:0x... | ❌ MISMATCH
-Exit code is 0 if all addresses match; 2 if any mismatch or error occurs.
-
-# Notes
-- Set blocks to finalized/safe when you need determinism and lower reorg risk.
-- If comparing the same chain via two different providers, mismatches can reveal provider indexing issues.
-- For proxy architectures, compare the implementation address directly to avoid false mismatches at the proxy layer.
-- Relevant for Aztec/Zama deployments where L1 contract soundness and mirror consistency are critical to system integrity.
-- This tool checks bytecode equality only; it does not verify ABI, events, or storage layout.
