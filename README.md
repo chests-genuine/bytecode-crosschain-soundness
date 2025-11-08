@@ -33,16 +33,17 @@ JSON output for automation:
    python app.py --address 0xYourContract --json
 
 ## Example Output
+### ❌ Mismatch between source and destination chains
 🔧 bytecode-crosschain-soundness  
 🌐 Source RPC: https://mainnet.infura.io/v3/YOUR_KEY  
-🌐 Destination RPC: https://arb1.arbitrum.io/rpc  
-🏷️ Address: 0x00000000219ab540356cBB839Cbe05303d7705Fa  
-⛓️ Source Block: latest  
-⛓️ Destination Block: latest  
-🔹 Source bytecode hash: 0x4d0e2df5b23f...  
-🔸 Destination bytecode hash: 0x4d0e2df5b23f...  
-🧩 Cross-chain bytecode comparison result: ✅ MATCH  
-⏱️ Completed in 0.74s
+🌐 Destination RPC: https://base-mainnet.g.alchemy.com/v2/YOUR_KEY  
+🏷️ Address: 0x1234567890abcdef1234567890abcdef12345678  
+⛓️ Source Block: 21000000  
+⛓️ Destination Block: 21000000  
+🔹 Source bytecode hash: 0x92babcdd4a3e9ff00e761acbe1290eabfbeaa9981a45c1ce48b1f7df89d1cc12  
+🔸 Destination bytecode hash: 0x11aa00dd44b33fdd0098229f33ee56ab22fe7781a56c2fcd899b2ee33aa4e892  
+🧩 Cross-chain bytecode comparison result: ❌ MISMATCH  
+⏱️ Completed in 0.69s  
 
 ## Notes
 - If either chain returns no code, the tool will exit with code `2` and print an error.  
