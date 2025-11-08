@@ -55,7 +55,8 @@ def main() -> None:
     if not w3_dst.is_connected():
         print("❌ Destination RPC connection failed.")
         sys.exit(1)
-
+        
+  print("✅ Connected successfully to both RPC endpoints.")
     print("🔧 bytecode-crosschain-soundness")
     print(f"🌐 Source RPC: {args.src_rpc}")
     print(f"🌐 Destination RPC: {args.dst_rpc}")
